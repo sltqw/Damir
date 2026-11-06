@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Құпия сөз қауіпсіздігін тексеруші</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-700">
+        <h1 class="text-2xl font-bold mb-2 text-center text-blue-400">Құпия Сөз Тестері</h1>
+        <p class="text-slate-400 text-sm text-center mb-6">Құпия сөзіңіздің беріктігін тексеріп, күшті пароль жасаңыз.</p>
+
+        <!-- Input Section -->
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-2" for="password">Құпия сөзді енгізіңіз:</label>
+            <div class="relative">
+                <input type="password" id="password" placeholder="Пароль теріңіз..." 
+                    class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 text-white placeholder-slate-500">
+                <button onclick="togglePassword()" class="absolute right-3 top-3.5 text-slate-400 hover:text-white text-sm">👁️</button>
+            </div>
+        </div>
+
+        <!-- Strength Meter Bar -->
+        <div class="mb-6">
+            <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">Қауіпсіздік деңгейі:</span>
+                <span id="strength-text" class="font-semibold text-red-400">Әлсіз</span>
+            </div>
+            <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                <div id="strength-bar" class="bg-red-500 h-full w-0 transition-all duration-300"></div>
+            </div>
+        </div>
+
+        <!-- Requirements List -->
+        <ul class="space-y-2 text-sm mb-6 text-slate-300">
+            <li id="length" class="flex items-center gap-2">❌ Кемінде 8 таңба</li>
+            <li id="uppercase" class="flex items-center gap-2">❌ Үлкен әріптер (A-Z)</li>
+            <li id="number" class="flex items-center gap-2">❌ Сандар (0-9)</li>
+            <li id="special" class="flex items-center gap-2">❌ Арнайы таңбалар (!@#$)</li>
+        </ul>
+
+        <!-- Generator Button -->
+        <button onclick="generatePassword()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-lg transition-colors shadow-lg">
+            Берік пароль генерациялау
+        </button>
+    </div>
+
+    <script>
+        const passwordInput = document.getElementById('password');
+        const strengthBar = document.getElementById('strength-bar');
+        const strengthText = document.getElementById('strength-text');
+        
+        const reqLength = document.getElementById('length');
+        const reqUppercase = document.getElementById('uppercase');
+        const reqNumber = document.getElementById('number');
+        const reqSpecial = document.getElementById('special');
+
+        passwordInput.addEventListener('input', () => {
+            const val = passwordInput.value;
+            let score = 0;
+
+            // Check length
+            if (val.length >= 8) {
+                reqLength.innerHTML = "✅ Кемінде 8 таңба";
+                reqLength.classList.replace('text-slate-300', 'text-green-400');
+                score++;
+            } else {
+                reqLength.innerHTML = "❌ Кемінде 8 таңба";
+                reqLength.classList.replace('text-green-400', 'text-slate-300');
+            }
+
+            // Check uppercase
+            if (/[A-Z]/.test(val)) {
+                reqUppercase.innerHTML = "✅ Үлкен әріптер (A-Z)";
+                reqUppercase.classList.replace('text-slate-300', 'text-green-400');
+                score++;
+            } else {
+                reqUppercase.innerHTML = "❌ Үлкен әріптер (A-Z)";
+                reqUppercase.classList.replace('text-green-400', 'text-slate-300');
+            }
+
+            // Check number
+            if (/[0-9]/.test(val)) {
+                reqNumber.innerHTML = "✅ Сандар (0-9)";
+                reqNumber.classList.replace('text-slate-300', 'text-green-400');
+                score++;
+            } else {
+                reqNumber.innerHTML = "❌ Сандар (0-9)";
+                reqNumber.classList.replace('text-green-400', 'text-slate-300');
+            }
+
+            // Check special char
+            if (/[^A-Za-z0-9]/.test(val)) {
+                reqSpecial.innerHTML = "✅ Арнайы таңбалар (!@#$)";
+                reqSpecial.classList.replace('text-slate-300', 'text-green-400');
+                score++;
+            } else {
+                reqSpecial.innerHTML = "❌ Арнайы таңбалар (!@#$)";
+                reqSpecial.classList.replace('text-green-400', 'text-slate-300');
+            }
+
+            // Update bar
+            if (val.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthBar.className = 'bg-red-500 h-full transition-all duration-300';
+                strengthText.innerText = 'Бос';
+                strengthText.className = 'font-semibold text-slate-400';
+            } else if (score <= 1) {
+                strengthBar.style.width = '25%';
+                strengthBar.className = 'bg-red-500 h-full transition-all duration-300';
+                strengthText.innerText = 'Өте әлсіз';
+                strengthText.className = 'font-semibold text-red-400';
+            } else if (score === 2 || score === 3) {
+                strengthBar.style.width = '65%';
+                strengthBar.className = 'bg-yellow-500 h-full transition-all duration-300';
+                strengthText.innerText = 'Орташа';
+                strengthText.className = 'font-semibold text-yellow-400';
+            } else {
+                strengthBar.style.width = '100%';
+                strengthBar.className = 'bg-green-500 h-full transition-all duration-300';
+                strengthText.innerText = 'Өте берік!';
+                strengthText.className = 'font-semibold text-green-400';
+            }
+        });
+
+        function togglePassword() {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+            } else {
+                passwordInput.type = 'password';
+            }
+        }
+
+        function generatePassword() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
+            let pass = "";
+            for (let i = 0; i < 12; i++) {
+                pass += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            passwordInput.value = pass;
+            passwordInput.dispatchEvent(new Event('input'));
+        }
+    </script>
+</body>
+</html>
