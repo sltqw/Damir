@@ -1,148 +1,338 @@
 <!DOCTYPE html>
-<html lang="kk">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Құпия сөз қауіпсіздігін тексеруші</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Пароли учетных данных</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-image 1.5s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Glassmorphism style */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .glass-btn-active {
+            background: rgba(59, 130, 246, 0.6) !important;
+            border-color: rgba(147, 197, 253, 0.5) !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4">
+<body id="bgBody" class="min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden text-slate-100">
 
-    <div class="max-w-md w-full bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-700">
-        <h1 class="text-2xl font-bold mb-2 text-center text-blue-400">Құпия Сөз Тестері</h1>
-        <p class="text-slate-400 text-sm text-center mb-6">Құпия сөзіңіздің беріктігін тексеріп, күшті пароль жасаңыз.</p>
+    <!-- Overlay dark backdrop for contrast -->
+    <div class="fixed inset-0 bg-black/40 backdrop-blur-[2px] pointer-events-none"></div>
 
-        <!-- Input Section -->
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-2" for="password">Құпия сөзді енгізіңіз:</label>
-            <div class="relative">
-                <input type="password" id="password" placeholder="Пароль теріңіз..." 
-                    class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 text-white placeholder-slate-500">
-                <button onclick="togglePassword()" class="absolute right-3 top-3.5 text-slate-400 hover:text-white text-sm">👁️</button>
+    <div class="max-w-md w-full glass-card rounded-[32px] shadow-2xl p-6 relative z-10 overflow-hidden flex flex-col justify-between">
+        
+        <div>
+            <!-- Header -->
+            <div class="text-center mb-6">
+                <h1 class="text-xl font-semibold tracking-tight text-white mb-1">Пароли учетных данных</h1>
+            </div>
+
+            <!-- Platform Tabs (iOS Transparent Round Buttons) -->
+            <div class="grid grid-cols-4 gap-2 mb-5">
+                <button onclick="setPlatform('icloud')" id="tab-icloud" class="glass-btn glass-btn-active py-2.5 rounded-full text-xs font-medium transition-all text-white shadow-sm flex items-center justify-center gap-1">iCloud 🔒</button>
+                <button onclick="setPlatform('gmail')" id="tab-gmail" class="glass-btn py-2.5 rounded-full text-xs font-medium transition-all text-slate-200 hover:text-white flex items-center justify-center gap-1">Gmail 🔒</button>
+                <button onclick="setPlatform('instagram')" id="tab-instagram" class="glass-btn py-2.5 rounded-full text-xs font-medium transition-all text-slate-200 hover:text-white flex items-center justify-center gap-1">Insta 🔒</button>
+                <button onclick="setPlatform('tiktok')" id="tab-tiktok" class="glass-btn py-2.5 rounded-full text-xs font-medium transition-all text-slate-200 hover:text-white flex items-center justify-center gap-1">TikTok 🔒</button>
+            </div>
+
+            <!-- Admin Pin Input -->
+            <div id="adminPinArea" class="mb-3 p-3 bg-red-950/20 border border-red-500/30 rounded-2xl backdrop-blur-md">
+                <label class="block text-[11px] font-medium text-red-300 mb-1 uppercase tracking-wider">Admin Code Required</label>
+                <input type="password" id="adminPinInput" maxlength="4"
+                    class="w-full bg-black/30 border border-white/20 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-red-400 text-white placeholder-slate-400 font-mono tracking-widest">
+            </div>
+
+            <!-- 2FA Code Input -->
+            <div id="tfaPinArea" class="mb-4 p-3 bg-amber-950/20 border border-amber-500/30 rounded-2xl backdrop-blur-md">
+                <label class="block text-[11px] font-medium text-amber-300 mb-1 uppercase tracking-wider">2FA Verification Code</label>
+                <input type="password" id="tfaPinInput" maxlength="6"
+                    class="w-full bg-black/30 border border-white/20 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-amber-400 text-white placeholder-slate-400 font-mono tracking-widest">
+            </div>
+
+            <!-- Input Area -->
+            <div class="mb-4">
+                <label id="inputLabel" class="block text-xs font-medium text-slate-300 mb-1.5 uppercase tracking-wider" for="targetInput">Цель (Apple ID / Email)</label>
+                <div class="flex gap-2">
+                    <input type="text" id="targetInput" 
+                        class="flex-1 bg-black/30 border border-white/20 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 text-white placeholder-slate-400 transition-all">
+                    <button onclick="generatePasswords()" class="glass-btn glass-btn-active active:scale-95 text-white px-5 py-2.5 rounded-2xl text-sm font-medium transition-all shadow-lg">
+                        Run
+                    </button>
+                </div>
+            </div>
+
+            <!-- Toast Notification -->
+            <div id="toast" class="hidden text-center text-xs text-emerald-300 mb-3 bg-emerald-950/40 border border-emerald-500/40 py-1.5 rounded-xl transition-all backdrop-blur-md">
+                Пароль скопирован в буфер обмена
+            </div>
+
+            <!-- Results Section -->
+            <div class="space-y-2 mb-4">
+                <div class="flex justify-between items-center text-xs text-slate-300 px-1 mb-1">
+                    <span id="platformTitle" class="capitalize font-medium text-slate-200">Пароли аккаунта iCloud</span>
+                    <span id="countText">0 сгенерировано</span>
+                </div>
+                
+                <div id="resultsList" class="max-h-52 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+                    <div class="text-center py-10 text-slate-400 text-xs border border-dashed border-white/20 rounded-2xl backdrop-blur-sm">
+                        Введите цель и нажмите Run
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Strength Meter Bar -->
-        <div class="mb-6">
-            <div class="flex justify-between text-xs mb-1">
-                <span class="text-slate-400">Қауіпсіздік деңгейі:</span>
-                <span id="strength-text" class="font-semibold text-red-400">Әлсіз</span>
-            </div>
-            <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
-                <div id="strength-bar" class="bg-red-500 h-full w-0 transition-all duration-300"></div>
-            </div>
+        <!-- Footer: Exact Apple Logo & Protected Website Notice -->
+        <div class="pt-4 border-t border-white/10 flex items-center justify-center gap-2 text-slate-300 text-xs font-medium tracking-wide">
+            <!-- Exact Apple Logo SVG from file -->
+            <svg class="w-4 h-4 fill-current text-white" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+                <path d="M747.4 537.4c-.4-62.8 26.7-117.8 79.5-151.3-43.2-63.2-111-71.5-134.7-73.3-57.1-5.8-112.2 33.6-141.4 33.6-29.6 0-75.5-32.9-124.2-32-64 1-123 37.2-155.9 94.6-66.9 116.1-17.1 287.4 46.5 370.9 31.4 41.5 68.8 88.2 118 86.4 47.9-1.9 65.9-31 123.8-31 57.6 0 74.3 31 124.2 30 51.1-.9 84.1-46 115.5-87.8 36.6-49.4 51.6-97.3 52.3-99.8-1.2-.5-100.3-38.5-101-152.3zM631.5 241c26.9-32.6 45.1-77.9 40.1-123-38.8 1.6-85.9 25.9-113.7 58.5-24.3 28.5-45.7 74.3-39.9 118.2 43.4 3.4 87.7-21.3 113.5-53.7z"/>
+            </svg>
+            <span>Protected Website</span>
         </div>
 
-        <!-- Requirements List -->
-        <ul class="space-y-2 text-sm mb-6 text-slate-300">
-            <li id="length" class="flex items-center gap-2">❌ Кемінде 8 таңба</li>
-            <li id="uppercase" class="flex items-center gap-2">❌ Үлкен әріптер (A-Z)</li>
-            <li id="number" class="flex items-center gap-2">❌ Сандар (0-9)</li>
-            <li id="special" class="flex items-center gap-2">❌ Арнайы таңбалар (!@#$)</li>
-        </ul>
-
-        <!-- Generator Button -->
-        <button onclick="generatePassword()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-lg transition-colors shadow-lg">
-            Берік пароль генерациялау
-        </button>
     </div>
 
     <script>
-        const passwordInput = document.getElementById('password');
-        const strengthBar = document.getElementById('strength-bar');
-        const strengthText = document.getElementById('strength-text');
+        // Mountain background slideshow
+        const mountainImages = [
+            'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80',
+            'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80',
+            'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80',
+            'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?auto=format&fit=crop&w=1920&q=80'
+        ];
         
-        const reqLength = document.getElementById('length');
-        const reqUppercase = document.getElementById('uppercase');
-        const reqNumber = document.getElementById('number');
-        const reqSpecial = document.getElementById('special');
+        let bgIndex = 0;
+        const bgBody = document.getElementById('bgBody');
 
-        passwordInput.addEventListener('input', () => {
-            const val = passwordInput.value;
-            let score = 0;
-
-            // Check length
-            if (val.length >= 8) {
-                reqLength.innerHTML = "✅ Кемінде 8 таңба";
-                reqLength.classList.replace('text-slate-300', 'text-green-400');
-                score++;
-            } else {
-                reqLength.innerHTML = "❌ Кемінде 8 таңба";
-                reqLength.classList.replace('text-green-400', 'text-slate-300');
-            }
-
-            // Check uppercase
-            if (/[A-Z]/.test(val)) {
-                reqUppercase.innerHTML = "✅ Үлкен әріптер (A-Z)";
-                reqUppercase.classList.replace('text-slate-300', 'text-green-400');
-                score++;
-            } else {
-                reqUppercase.innerHTML = "❌ Үлкен әріптер (A-Z)";
-                reqUppercase.classList.replace('text-green-400', 'text-slate-300');
-            }
-
-            // Check number
-            if (/[0-9]/.test(val)) {
-                reqNumber.innerHTML = "✅ Сандар (0-9)";
-                reqNumber.classList.replace('text-slate-300', 'text-green-400');
-                score++;
-            } else {
-                reqNumber.innerHTML = "❌ Сандар (0-9)";
-                reqNumber.classList.replace('text-green-400', 'text-slate-300');
-            }
-
-            // Check special char
-            if (/[^A-Za-z0-9]/.test(val)) {
-                reqSpecial.innerHTML = "✅ Арнайы таңбалар (!@#$)";
-                reqSpecial.classList.replace('text-slate-300', 'text-green-400');
-                score++;
-            } else {
-                reqSpecial.innerHTML = "❌ Арнайы таңбалар (!@#$)";
-                reqSpecial.classList.replace('text-green-400', 'text-slate-300');
-            }
-
-            // Update bar
-            if (val.length === 0) {
-                strengthBar.style.width = '0%';
-                strengthBar.className = 'bg-red-500 h-full transition-all duration-300';
-                strengthText.innerText = 'Бос';
-                strengthText.className = 'font-semibold text-slate-400';
-            } else if (score <= 1) {
-                strengthBar.style.width = '25%';
-                strengthBar.className = 'bg-red-500 h-full transition-all duration-300';
-                strengthText.innerText = 'Өте әлсіз';
-                strengthText.className = 'font-semibold text-red-400';
-            } else if (score === 2 || score === 3) {
-                strengthBar.style.width = '65%';
-                strengthBar.className = 'bg-yellow-500 h-full transition-all duration-300';
-                strengthText.innerText = 'Орташа';
-                strengthText.className = 'font-semibold text-yellow-400';
-            } else {
-                strengthBar.style.width = '100%';
-                strengthBar.className = 'bg-green-500 h-full transition-all duration-300';
-                strengthText.innerText = 'Өте берік!';
-                strengthText.className = 'font-semibold text-green-400';
-            }
-        });
-
-        function togglePassword() {
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-            } else {
-                passwordInput.type = 'password';
-            }
+        function changeBackground() {
+            bgBody.style.backgroundImage = `url('${mountainImages[bgIndex]}')`;
+            bgIndex = (bgIndex + 1) % mountainImages.length;
         }
 
-        function generatePassword() {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
-            let pass = "";
-            for (let i = 0; i < 12; i++) {
-                pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        changeBackground();
+        setInterval(changeBackground, 6000);
+
+        let currentPlatform = 'icloud';
+        const ADMIN_CODE = "0205";
+
+        function setPlatform(platform) {
+            currentPlatform = platform;
+            ['icloud', 'gmail', 'instagram', 'tiktok'].forEach(p => {
+                const btn = document.getElementById(`tab-${p}`);
+                if (p === platform) {
+                    btn.className = "glass-btn glass-btn-active py-2.5 rounded-full text-xs font-medium transition-all text-white shadow-sm flex items-center justify-center gap-1";
+                } else {
+                    btn.className = "glass-btn py-2.5 rounded-full text-xs font-medium transition-all text-slate-200 hover:text-white flex items-center justify-center gap-1";
+                }
+            });
+
+            const inputLabel = document.getElementById('inputLabel');
+            const targetInput = document.getElementById('targetInput');
+            const platformTitle = document.getElementById('platformTitle');
+            const adminPinArea = document.getElementById('adminPinArea');
+            const tfaPinArea = document.getElementById('tfaPinArea');
+
+            targetInput.value = '';
+            document.getElementById('adminPinInput').value = '';
+            document.getElementById('tfaPinInput').value = '';
+            
+            adminPinArea.classList.remove('hidden');
+            tfaPinArea.classList.remove('hidden');
+
+            if (platform === 'instagram' || platform === 'tiktok') {
+                inputLabel.innerText = "Цель (Юзернейм аккаунта)";
+            } else {
+                if (platform === 'gmail') {
+                    inputLabel.innerText = "Цель (Gmail / Email)";
+                } else {
+                    inputLabel.innerText = "Цель (Apple ID / Email)";
+                }
             }
-            passwordInput.value = pass;
-            passwordInput.dispatchEvent(new Event('input'));
+
+            platformTitle.innerText = `Пароли аккаунта ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
+            
+            document.getElementById('resultsList').innerHTML = `<div class="text-center py-10 text-slate-400 text-xs border border-dashed border-white/20 rounded-2xl backdrop-blur-sm">Введите цель и нажмите Run</div>`;
+            document.getElementById('countText').innerText = '0 сгенерировано';
+        }
+
+        function generatePasswords() {
+            const inputVal = document.getElementById('targetInput').value.trim();
+            const resultsList = document.getElementById('resultsList');
+            const countText = document.getElementById('countText');
+
+            const enteredAdminPin = document.getElementById('adminPinInput').value.trim();
+            if (enteredAdminPin !== ADMIN_CODE) {
+                alert("Access Denied! Incorrect Admin Code.");
+                return;
+            }
+
+            const enteredTfaPin = document.getElementById('tfaPinInput').value.trim();
+            if (!enteredTfaPin) {
+                alert("2FA Verification Failed! Please enter 2FA code.");
+                return;
+            }
+
+            if (!inputVal) {
+                alert("Пожалуйста, введите цель!");
+                return;
+            }
+
+            const username = inputVal.includes('@') ? inputVal.split('@')[0] : inputVal;
+            const baseName = username.replace(/[^a-zA-Z]/g, '');
+            const baseNumbers = username.replace(/[^0-9]/g, '');
+            const capName = baseName ? baseName.charAt(0).toUpperCase() + baseName.slice(1) : username.charAt(0).toUpperCase() + username.slice(1);
+
+            const passwords = new Set();
+
+            const numbers = ['1', '12', '123', '1234', '12345', '123456', '777', '007', '99', '01', '666'];
+            const years = ['2020', '2021', '2022', '2023', '2024', '2025', '2026', '1995', '1998', '2000', '2005'];
+            const symbols = ['!', '@', '#', '$', '%', '*', '!!', '123!'];
+
+            let platformSuffixes = [];
+            if (currentPlatform === 'icloud') {
+                platformSuffixes = ['Apple', 'iCloud', 'iOS', 'Mac', 'iPhone', 'Pass', 'Id'];
+            } else if (currentPlatform === 'gmail') {
+                platformSuffixes = ['Google', 'Gmail', 'Mail', 'User', 'Account', 'Log'];
+            } else if (currentPlatform === 'instagram') {
+                platformSuffixes = ['_', '__', '_official', 'Insta', 'Gram', 'Real', 'Vip', 'Page', 'Public'];
+            } else if (currentPlatform === 'tiktok') {
+                platformSuffixes = ['_', 'Tok', 'TikTok', 'Tv', 'Live', 'Video', 'Stream', 'Trend'];
+            }
+
+            passwords.add(username);
+            passwords.add(username.toLowerCase());
+            passwords.add(username.toUpperCase());
+            passwords.add(capName);
+            passwords.add(username.split('').reverse().join(''));
+
+            numbers.forEach(num => {
+                passwords.add(username + num);
+                passwords.add(capName + num);
+                passwords.add(num + username);
+            });
+
+            years.forEach(year => {
+                passwords.add(username + year);
+                passwords.add(capName + year);
+                passwords.add(username + '_' + year);
+                passwords.add(capName + '@' + year);
+            });
+
+            symbols.forEach(sym => {
+                passwords.add(username + sym);
+                passwords.add(capName + sym);
+                passwords.add(sym + username + sym);
+                numbers.slice(0, 5).forEach(num => {
+                    passwords.add(username + num + sym);
+                    passwords.add(capName + sym + num);
+                });
+            });
+
+            platformSuffixes.forEach(tag => {
+                passwords.add(username + tag);
+                passwords.add(capName + tag);
+                passwords.add(tag + username);
+                passwords.add(username + '_' + tag);
+                passwords.add(capName + tag + '123');
+                passwords.add(capName + tag + '!');
+            });
+
+            if (baseNumbers && baseName) {
+                passwords.add(baseName + baseNumbers);
+                passwords.add(capName + baseNumbers);
+                passwords.add(baseName + '_' + baseNumbers);
+                passwords.add(baseNumbers + baseName);
+                passwords.add(capName + baseNumbers + '!');
+                passwords.add(baseName + '2026');
+            }
+
+            let listArray = Array.from(passwords);
+
+            let extraCounter = 1;
+            while (listArray.length < 150) {
+                listArray.push(`${capName}pass${extraCounter}!`);
+                listArray.push(`${username}_sec_${extraCounter}`);
+                extraCounter++;
+            }
+
+            listArray = listArray.slice(0, 150);
+
+            resultsList.innerHTML = '';
+            countText.innerText = `${listArray.length} сгенерировано`;
+
+            listArray.forEach((pwd, idx) => {
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center bg-black/40 border border-white/10 hover:border-white/30 px-3.5 py-2.5 rounded-2xl transition-all group cursor-pointer backdrop-blur-md";
+                item.onclick = () => copyToClipboard(pwd);
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <span class="text-[10px] text-slate-400 font-mono w-6 text-right">${idx + 1}.</span>
+                        <span class="font-mono text-xs text-slate-100 group-hover:text-blue-300 transition-colors truncate">${escapeHtml(pwd)}</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 group-hover:text-white font-medium shrink-0 ml-2">Copy</span>
+                `;
+                resultsList.appendChild(item);
+            });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            const toast = document.getElementById('toast');
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 1500);
+        }
+
+        function escapeHtml(string) {
+            return String(string).replace(/[&<>"']/g, function (s) {
+                return {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
+                }[s];
+            });
         }
     </script>
 </body>
 </html>
+```[cite: 1]
